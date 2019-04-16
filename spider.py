@@ -1,4 +1,6 @@
 from urllib.request import urlopen, Request
+
+from domain_features import hardRules
 from link_finder import LinkFinder
 from domain import *
 from general import *
@@ -49,39 +51,48 @@ class Spider:
     # Converts raw response data into readable information and checks for proper html formatting
     @staticmethod
     def gather_links(page_url):
-        html_string = ''
-        try:
-            req = Request(page_url, headers={'User-Agent': 'Mozilla/5.0'})
-            response = urlopen(req)
-            if 'text/html' in response.getheader('Content-Type'):
-                # read the html in byte format
-                html_bytes = response.read()
-                # convert the webpage in string format
-                html_string = html_bytes.decode("utf-8")
-
-                # save the html files
-                # file = codecs.open(Spider.html_pages+"_".join(page_url.split('/')[2:])+'.html', "w", "utf-8")
-                Spider.page_count += 1
-                # file = codecs.open(Spider.html_pages + str(Spider.page_count)+ '.html', "a", "utf-8")
-                file = codecs.open(Spider.html_pages + randomString(4) + '.html', "a", "utf-8")
-                # file = codecs.open('raw_files.txt', "a", "utf-8")
-                file.write(html_string)
-                file.close()
-
-            # find the links
-            finder = LinkFinder(Spider.base_url, page_url)
-            finder.feed(html_string)
-
-        except Exception as e:
-            print(str(e))
+        if page_url in Spider.crawled:
+            Spider.queue.remove(page_url)
+            print("***************************** Duplicate found!!!!!!!!!!!!!!!!")
             return set()
-        return finder.page_links()
+
+        else:
+            html_string = ''
+            try:
+                req = Request(page_url, headers={'User-Agent': 'Mozilla/5.0'})
+                response = urlopen(req)
+                if 'text/html' in response.getheader('Content-Type'):
+                    # read the html in byte format
+                    html_bytes = response.read()
+                    # convert the webpage in string format
+                    html_string = html_bytes.decode("utf-8")
+
+                    # save the html files
+                    # file = codecs.open(Spider.html_pages+"_".join(page_url.split('/')[2:])+'.html', "w", "utf-8")
+                    Spider.page_count += 1
+                    # file = codecs.open(Spider.html_pages + str(Spider.page_count)+ '.html', "a", "utf-8")
+                    file = codecs.open(Spider.html_pages + randomString(4) + '.html', "a", "utf-8")
+                    # file = codecs.open('raw_files.txt', "a", "utf-8")
+                    file.write(html_string)
+                    file.close()
+
+                # find the links
+                finder = LinkFinder(Spider.base_url, page_url)
+                finder.feed(html_string)
+
+            except Exception as e:
+                print(str(e))
+                return set()
+            return finder.page_links()
 
     # Saves queue data to project files
     @staticmethod
     def add_links_to_queue(links):
         for url in links:
             if (url in Spider.queue) or (url in Spider.crawled):
+                continue
+
+            if hardRules(url):
                 continue
 
             # Check if this is the same website/ Not going other site

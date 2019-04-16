@@ -50,7 +50,7 @@ def file_to_set(file_name):
 # Iterate through a set, each item will be a line in a file
 def set_to_file(links, file_name):
     with codecs.open(file_name, "w", "utf-8") as f:
-        for l in links:
+        for l in list(links):
             f.write(l + "\n")
 
 
