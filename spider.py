@@ -1,5 +1,7 @@
 from urllib.request import urlopen, Request
 
+from newspaper import Article
+
 from domain_features import hardRules
 from link_finder import LinkFinder
 from domain import *
@@ -46,7 +48,45 @@ class Spider:
             Spider.add_links_to_queue(Spider.gather_links(page_url))
             Spider.queue.remove(page_url)
             Spider.crawled.add(page_url)
-            Spider.update_files()
+            if Spider.page_count<100:
+                Spider.update_files()
+
+    @staticmethod
+    def gather_links_and_text(page_url):
+        if page_url in Spider.crawled:
+            Spider.queue.remove(page_url)
+            print("***************************** Duplicate found!!!!!!!!!!!!!!!!")
+            return set()
+
+        else:
+            html_string = ''
+            try:
+                article = Article(page_url, language='bn')
+                article.download()
+                article.parse()
+
+                html_string = article.html
+                Spider.news += article.title + '\n' + article.text
+
+                Spider.page_count += 1
+                file = codecs.open(Spider.html_pages + randomString(4) + '.html', "a", "utf-8")
+                file.write(html_string)
+                file.close()
+
+                if Spider.page_count % 100 == 0:
+                    with codecs.open(Spider.project_name + '/all_texts.txt', "a", "utf-8") as w:
+                        for l in Spider.news:
+                            w.write(l)
+                    Spider.news = ""
+
+                # find the links
+                finder = LinkFinder(Spider.base_url, page_url)
+                finder.feed(html_string)
+
+            except Exception as e:
+                print(str(e))
+                return set()
+            return finder.page_links()
 
     # Converts raw response data into readable information and checks for proper html formatting
     @staticmethod
@@ -75,6 +115,9 @@ class Spider:
                     # file = codecs.open('raw_files.txt', "a", "utf-8")
                     file.write(html_string)
                     file.close()
+
+                    if Spider.page_count % 100 == 0:
+                        Spider.update_files()
 
                 # find the links
                 finder = LinkFinder(Spider.base_url, page_url)
