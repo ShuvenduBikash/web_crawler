@@ -69,7 +69,7 @@ class Spider:
                 Spider.news += article.title + '\n' + article.text
 
                 Spider.page_count += 1
-                file = codecs.open(Spider.html_pages + randomString(4) + '.html', "a", "utf-8")
+                file = codecs.open(Spider.html_pages + randomString(8) + '.html', "a", "utf-8")
                 file.write(html_string)
                 file.close()
 
@@ -111,7 +111,7 @@ class Spider:
                     # file = codecs.open(Spider.html_pages+"_".join(page_url.split('/')[2:])+'.html', "w", "utf-8")
                     Spider.page_count += 1
                     # file = codecs.open(Spider.html_pages + str(Spider.page_count)+ '.html', "a", "utf-8")
-                    file = codecs.open(Spider.html_pages + randomString(4) + '.html', "a", "utf-8")
+                    file = codecs.open(Spider.html_pages + randomString(8) + '.html', "a", "utf-8")
                     # file = codecs.open('raw_files.txt', "a", "utf-8")
                     file.write(html_string)
                     file.close()

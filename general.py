@@ -2,6 +2,7 @@ import os
 import codecs
 import string
 import random
+from domain_features import hardRules
 
 
 # Each website is a separate project (folder)
@@ -23,13 +24,13 @@ def create_data_files(project_name, base_url):
 
 # Create a new file
 def write_file(path, data):
-    with open(path, 'w') as f:
+    with codecs.open(path, 'w', "utf-8") as f:
         f.write(data)
 
 
 # Add data onto an existing file
 def append_to_file(path, data):
-    with open(path, 'a') as file:
+    with codecs.open(path, 'a', "utf-8") as file:
         file.write(data + '\n')
 
 
@@ -43,7 +44,9 @@ def file_to_set(file_name):
     results = set()
     with codecs.open(file_name, 'r', "utf-8") as f:
         for line in f:
-            results.add(line.replace('\n', ''))
+            url = line.replace('\n', '')
+            if not hardRules(url):
+                results.add(url)
     return results
 
 
@@ -54,7 +57,7 @@ def set_to_file(links, file_name):
             f.write(l + "\n")
 
 
-def randomString(stringLength=4):
+def randomString(stringLength=8):
     """Generate a random string of fixed length """
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(stringLength))
